@@ -2,22 +2,30 @@
 
 import { $ } from "https://deno.land/x/iteruyo@v0.2.0/mod.ts"
 
-function* par(prev: string): Generator<string> {
-    const next = [
-        "(",
-        "x",
-        ")"
-    ]
-    if (prev.length < 3) {
-        for (const x of next) {
-            yield* par(prev + x)
-        }    
-    } else {
-        yield prev
+interface ProtoOption {
+    words: string[]
+    filter: (str: string) => boolean
+    end: (str: string) => boolean
+}
+function proto(option: ProtoOption) {
+    return function* par(prev: string): Generator<string> {
+        if (option.end(prev)) {
+            yield prev
+        } else {
+            for (const x of option.words) {
+                yield* par(prev + x)
+            }
+        }
     }
 }
 
-for (const value of par("")) {
+const cc = proto({
+    words: ["(", ")"],
+    end: str => str.length > 3,
+    filter: str => true,
+})
+
+for (const value of cc("")) {
     console.log(value)
 }
-console.log($(par("")).length)
+console.log($(cc("")).length)
